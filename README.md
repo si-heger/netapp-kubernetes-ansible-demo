@@ -24,12 +24,12 @@ Tested and build with:
 - Docker 18.06 & 18.09
 - Ansible 2.7.5
 
-I had a VMware Template called "ubuntu-devops-template" on a VMware NFS datastore that is the baseline for everything. The scripts should work with any other datastore as well but with NFS the beauty is that the clones do not take up any space and are instantly available with an ONTAP storage system. Most likely the scripts will fail on other Linux distros.
+I have a VMware Template called "ubuntu-devops-template" on a VMware NFS datastore that is the baseline for everything. The scripts should work with any other datastore as well but with NFS the beauty is that the clones do not take up any space and are instantly available with an ONTAP storage system. Most likely the scripts will fail on other Linux distros.
 
 The template is based on Ubuntu 18.04 LTS and has a few items configured upfront:
 
 - User & Access
-  - Everything is based on the user name "netapp" and a public key is stored on the template (~netapp/.ssh/authorized_keys). I also included the key pair (id_rsa, id_rsa.pub) which is absolutly not recommended but made my life easier. 
+  - Everything is based on the user name "netapp" and a public key is stored on the template (~netapp/.ssh/authorized_keys). On the controll VM there must be the private key under /home/netapp/.ssh/id_rsa
   - Add NOPASSWD to sudoers to allow SUDO access for ansible
   -  Example: https://code-maven.com/enable-ansible-passwordless-sudo
 - Network is based on DHCP
