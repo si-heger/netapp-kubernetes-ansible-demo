@@ -1,0 +1,60 @@
+- hosts: localhost
+  gather_facts: no
+  remote_user: root
+  tasks:
+   - name: "Add key for kubernetes package"
+     shell: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+   - name: "Add repo"
+     shell: echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+
+   - name: "Update APT package cache"
+     apt: update_cache=yes cache_valid_time=600
+     become: yes
+
+   - name: "Uninstall kubectl if it exists"
+     apt: 
+       name: kubectl
+       state: absent
+     ignore_errors: yes
+     become: true
+
+   - name: "Install kubectl"
+     apt:
+       name: kubectl
+       update_cache: yes
+     become: true
+   
+   - name: "Clean up dir"
+     shell: rm -rf /home/netapp/.kube/
+     args:
+       warn: false # set warn=false to prevent warning
+ 
+   - name: "Create kube config directory"
+     shell: mkdir -p /home/netapp/.kube/
+     args:
+       warn: false # set warn=false to prevent warning
+
+   - name: "Permissions"
+     shell: chown netapp:netapp -R /home/netapp/.kube/
+     args:
+       warn: false # set warn=false to prevent warning
+
+- hosts: k8s*master*1
+  gather_facts: no
+
+  tasks:
+   - name: "Copy kube config from remote to local"
+     fetch:
+      src: /root/.kube/config
+      dest: /home/netapp/.kube/config
+      flat: yes
+     become: true
+
+- hosts: localhost
+  gather_facts: no
+  remote_user: netapp
+  tasks:
+   - name: "Create kube config directory"
+     shell: kubectl create -f create-admin-user-k8s.yaml
+     ignore_errors: yes

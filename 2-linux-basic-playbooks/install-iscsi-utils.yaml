@@ -1,0 +1,25 @@
+- hosts: kubernetes
+  remote_user: netapp
+  gather_facts: false
+
+  tasks:
+    - name: Install packages
+      apt: name={{item}} state=installed
+      with_items:
+        - open-iscsi
+        - lsscsi 
+        - sg3-utils
+        - multipath-tools
+        - scsitools
+
+    - name: Run iscsi stuff
+      shell: systemctl enable multipath-tools.service
+      become: true
+
+    - name: Run iscsi stuff
+      shell: service multipath-tools restart
+      become: true
+
+    - name: Create new iSCSI IQN
+      shell: echo "InitiatorName=`/sbin/iscsi-iname`" > /etc/iscsi/initiatorname.iscsi
+      become: true

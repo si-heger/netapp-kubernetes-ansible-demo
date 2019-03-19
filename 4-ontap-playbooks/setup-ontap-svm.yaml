@@ -1,0 +1,149 @@
+- hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ..\config\ontap_vars.yaml
+  vars:
+    login: &login
+      hostname: "{{ hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      https: true
+      validate_certs: false
+  name: Onboard SVM
+  tasks:
+  - name: Create SVM
+    na_ontap_svm:
+      state: present
+      name: "{{ vserver }}"
+      root_volume: "{{ vserver}}_root"
+      root_volume_aggregate: "{{ aggr }}"
+      root_volume_security_style: unix
+      allowed_protocols: ['nfs', 'iscsi']
+      aggr_list: "{{ aggrlist }}"
+      <<: *login
+
+  - name: Create interface - MGMT
+    na_ontap_interface:
+      state: present
+      interface_name: "{{ vserver }}_mgmt_lif_1"
+      home_port: "{{ homeport }}"
+      home_node: "{{ homenode1 }}"
+      role: data
+      protocols: none
+      admin_status: up
+      failover_policy: local-only
+      firewall_policy: mgmt
+      is_auto_revert: true
+      address: "{{ mgmtaddress }}"
+      netmask: 255.255.0.0
+      vserver: "{{ vserver }}"
+      <<: *login
+
+  - name: Create interface - NFS
+    na_ontap_interface:
+      state: present
+      interface_name: "{{ vserver }}_nfs_lif_1"
+      home_port: "{{ homeport }}"
+      home_node: "{{ homenode1 }}"
+      role: data
+      protocols: nfs
+      admin_status: up
+      failover_policy: local-only
+      firewall_policy: mgmt
+      is_auto_revert: true
+      address: "{{ nfsaddress }}"
+      netmask: 255.255.0.0
+      vserver: "{{ vserver }}"
+      <<: *login
+
+  - name: Create interface - iSCSI 1
+    na_ontap_interface:
+      state: present
+      interface_name: "{{ vserver }}_iscsi_lif_1"
+      home_port: "{{ homeport }}"
+      home_node: "{{ homenode1 }}"
+      role: data
+      protocols: iscsi
+      admin_status: up
+      firewall_policy: mgmt
+      address: "{{ iscsi1 }}"
+      netmask: 255.255.0.0
+      vserver: "{{ vserver }}"
+      <<: *login
+
+  - name: Create interface - iSCSI 2
+    na_ontap_interface:
+      state: present
+      interface_name: "{{ vserver }}_iscsi_lif_2"
+      home_port: "{{ homeport }}"
+      home_node: "{{ homenode2 }}"
+      role: data
+      protocols: iscsi
+      admin_status: up
+      firewall_policy: mgmt
+      address: "{{ iscsi2 }}"
+      netmask: 255.255.0.0
+      vserver: "{{ vserver }}"
+      <<: *login
+
+  - name: change nfs status
+    na_ontap_nfs:
+      state: present
+      service_state: started
+      vserver: "{{ vserver }}"
+      nfsv3: enabled
+      nfsv4: enabled
+      nfsv41: enabled
+      tcp: enabled
+      udp: enabled
+      vstorage_state: disabled
+      showmount: disabled # best practice for kubernetes
+      <<: *login
+
+  - name: Setup default rules
+    na_ontap_export_policy_rule:
+      state: present
+      policy_name: default
+      vserver: "{{ vserver }}"
+      client_match: "{{ exportpolicy }}"
+      ro_rule: any
+      rw_rule: none
+      super_user_security: none
+      <<: *login
+
+  - name: Create iscsi service
+    na_ontap_iscsi:
+      state: present
+      service_state: started
+      vserver: "{{ vserver }}"
+      <<: *login
+
+# portset create -vserver svm_kubernetes -portset kubernetesPortSet -protocol iscsi -port-name svm_kubernetes_iscsi_lif_1, svm_kubernetes_iscsi_lif_2
+  - name: Create PortSet
+    na_ontap_command:
+      command: ['portset', 'create', '-vserver', "{{ vserver }}", '-portset', 'kubernetesPortSet', '-protocol', 'iscsi', '-port-name', "{{ vserver }}_iscsi_lif_1", ',', "{{ vserver }}_iscsi_lif_2"]
+      <<: *login
+
+  - name: Create Igroup
+    na_ontap_igroup:
+      state: present
+      name: kubernetesIgroup
+      bind_portset: kubernetesPortSet
+      initiator: 'iqn.2005-03.org.open-iscsi:701520a96856'
+      initiator_group_type: iscsi
+      ostype: linux
+      vserver: "{{ vserver }}"
+      <<: *login
+
+  - name: Create User
+    na_ontap_user:
+      state: present
+      name: vsadmin
+      authentication_method: password
+      application: ontapi
+      lock_user: no
+      role_name: vsadmin
+      vserver: "{{ vserver }}"
+      <<: *login
+
+

@@ -1,0 +1,8 @@
+- hosts: localhost
+  become: true
+  tasks:
+    - debug:
+       msg: "Remove everything ...(must be run as root 'sudo ansible-playbook tabula-rasa-destroy-everything.yaml"
+
+- name: Delete all VMs
+  import_playbook: vmware-playbooks/delete-cloned-devOps-vm.yaml

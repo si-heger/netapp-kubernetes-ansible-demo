@@ -1,0 +1,19 @@
+- hosts: localhost
+  tasks:
+    - debug: 
+       msg: "Starting deploying full cluster"
+
+- name: Deploy VMware play
+  import_playbook: vmware-playbooks/clone-devOps-vm.yaml
+
+- name: Setup hosts
+  import_playbook: linux-basic-playbooks/change-hostnames.yaml
+
+- name: Install Kubespray and rollout Kubernetes cluster
+  import_playbook: linux-basic-playbooks/install-kubespray.yaml
+
+- name: Setup kubectl locally and copy kube config
+  import_playbook: kubernetes-playbooks/install-kubectl-locally.yaml
+
+- name: Add routes to an internet gateway to be able to pull images
+  import_playbook: linux-basic-playbooks/add-route-internet-gateway.yaml

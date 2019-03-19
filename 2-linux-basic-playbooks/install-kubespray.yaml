@@ -1,0 +1,81 @@
+- hosts: k8s*kubespray*
+  remote_user: netapp
+  vars:
+    git_user: si-heger
+    git_mail: simon.heger@netapp.com
+    install_dir: /home/netapp/kubespray/
+  tasks:
+    - name: "Set a git account"
+      command: "git config --global user.name {{ git_user }}"
+      become: true
+
+    - name: "Set a git mail"
+      command: "git config --global user.email {{ git_mail }}"
+      become: true
+
+    - name: "Clone Kubespray from git to {{ inventory_hostname }} into {{ install_dir }}"
+      command: "git clone https://github.com/kubernetes-sigs/kubespray.git {{ install_dir }}"
+      become: true
+      ignore_errors: yes #if folder already exists ignore that
+
+    - name: "Install kubespray requirements"
+      command: "pip3 install -r {{ install_dir }}requirements.txt"
+      become: true
+    
+    - name: "Copy kubespray host inventory"
+      command: "cp -rfp {{ install_dir }}inventory/sample {{ install_dir }}inventory/k8s-cluster"
+      become: true
+
+    - name: "Get IP addresses from /etc/ansible/hosts for the k8s cluster master nodes"
+      shell: grep "k8s.*master.*=" /etc/ansible/hosts | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sed ':a;N;$!ba;s/\n/ /g'
+      register: masterips
+      delegate_to: localhost
+      run_once: true
+
+    - name: "Get IP addresses from /etc/ansible/hosts for the k8s cluster worker nodes"
+      shell: grep "k8s.*node.*=" /etc/ansible/hosts | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sed ':a;N;$!ba;s/\n/ /g'
+      register: nodeips
+      delegate_to: localhost
+      run_once: true
+
+    - set_fact:
+        clusterips={{ masterips.stdout + ' ' +  nodeips.stdout }}
+
+    - debug: var=clusterips
+      run_once: true
+
+    - name: "Set cluster IPS"
+      shell: "CONFIG_FILE=/home/netapp/kubespray/inventory/k8s-cluster/hosts.ini python3 /home/netapp/kubespray/contrib/inventory_builder/inventory.py {{ clusterips }}"
+      become: true
+
+    - name: "Copy private key to kubespray host"
+      copy:
+        src: /home/netapp/.ssh/id_rsa
+        dest: /home/netapp/.ssh/id_rsa
+        owner: netapp
+        group: netapp
+        mode: 0600
+      become: true
+      run_once: true
+
+    - name: "Copy private key to kubespray host for root"
+      copy:
+        src: /home/netapp/.ssh/id_rsa
+        dest: /root/.ssh/id_rsa
+        owner: root
+        group: root
+        mode: 0600
+      become: true
+      run_once: true
+
+    - name: "Test ping"
+      shell: " ansible -i /home/netapp/kubespray/inventory/k8s-cluster/hosts.ini all -m ping -e 'ansible_python_interpreter=/usr/bin/python3' --ssh-common-args='-o StrictHostKeyChecking=no'"
+
+    - name: "Run kubespray remotely"
+      shell: "ansible-playbook -i /home/netapp/kubespray/inventory/k8s-cluster/hosts.ini --become --become-user=root /home/netapp/kubespray/cluster.yml -e 'ansible_python_interpreter=/usr/bin/python3' --ssh-common-args='-o StrictHostKeyChecking=no'"
+
+    - name: "Get cluster access"
+      debug:
+        msg: "You can get access via 'https://first_master:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login' - check https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md for details"
+
+

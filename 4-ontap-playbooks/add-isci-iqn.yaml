@@ -1,0 +1,35 @@
+- hosts: kubernetes,!*kubespray*
+  vars_files:
+    - ..\config\ontap_vars.yaml
+  remote_user: netapp
+  gather_facts: false
+  vars:
+    login: &login
+      hostname: "{{ hostname }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      https: true
+      validate_certs: false
+  name: Add iSQSI IQN
+  tasks:
+  - name: Read IQN names
+    shell: "cat /etc/iscsi/initiatorname.iscsi | cut -d'=' -f2"
+    become: true
+    register: k8s_iqns
+
+  - name: Print iscsi IQNs
+    debug:
+      msg: "iqn: {{ k8s_iqns.stdout }}"
+
+  - name: Create Igroup
+    with_items: "{{ k8s_iqns.stdout }}"
+    na_ontap_igroup:
+      state: present
+      name: kubernetesIgroup
+      bind_portset: kubernetesPortSet
+      initiator: "{{ item }}"
+      initiator_group_type: iscsi
+      ostype: linux
+      vserver: "{{ vserver }}"
+      <<: *login
+    delegate_to: localhost

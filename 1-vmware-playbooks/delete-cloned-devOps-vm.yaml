@@ -1,0 +1,32 @@
+# Under work
+# Check documentation here:
+# https://docs.ansible.com/ansible/latest/vmware/vmware_scenarios.html
+
+- name:  Delete cloned virtual machines from VMware
+  hosts: localhost
+  gather_facts: False
+  vars_files:
+    - ../config/vcenter_vars.yml
+    - ../config/k8s-host-list.yml
+  tasks:
+    - name: "Delete VMs"
+      with_items: "{{ k8shostlist }}"
+      vmware_guest:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_pass }}"
+        validate_certs: False
+        name: "{{ item }}"
+        datacenter: "Stuttgart"
+        resource_pool: "DevOps"
+        state: absent
+        force: yes
+      delegate_to: localhost
+      register: clone_facts
+
+    - name: "Remove kubernetes hosts from ansible hosts file"
+      lineinfile:
+        dest: /etc/ansible/hosts
+        state: absent
+        regexp: ".*k8s.*ansible_host=.*"
+      become: true
