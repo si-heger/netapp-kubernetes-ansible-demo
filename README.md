@@ -32,6 +32,8 @@ The template is based on Ubuntu 18.04 LTS and has a few items configured upfront
   - Everything is based on the user name "netapp" and a public key is stored on the template (~netapp/.ssh/authorized_keys). I also included the key pair (id_rsa, id_rsa.pub) which is absolutly not recommended but made my life easier. 
   - Add NOPASSWD to sudoers to allow SUDO access for ansible
   -  Example: https://code-maven.com/enable-ansible-passwordless-sudo
+- Network is based on DHCP
+  - Example for Ubuntu 18.04: https://www.serverlab.ca/tutorials/linux/administration-linux/how-to-configure-network-settings-in-ubuntu-18-04-bionic-beaver/
 - NFS & rpcbind
   - sudo apt-get install -y nfs-common
   - sudo systemctl enable rpcbind
