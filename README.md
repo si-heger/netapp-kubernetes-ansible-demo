@@ -28,7 +28,8 @@ I had a VMware Template called "ubuntu-devops-template" on a VMware NFS datastor
 
 The template is based on Ubuntu 18.04 LTS and has a few items configured upfront:
 
-- Everything is based on the user name "netapp"
+- User & Access
+  - Everything is based on the user name "netapp" and a public key is stored on the template (~netapp/.ssh/authorized_keys). The private key is stored on my ansible controll VM
 - Add NOPASSWD to sudoers to allow SUDO access for ansible
   -  Example: https://code-maven.com/enable-ansible-passwordless-sudo
 - NFS & rpcbind
