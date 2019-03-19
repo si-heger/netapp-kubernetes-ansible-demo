@@ -24,7 +24,7 @@ Tested and build with:
 - Docker 18.06 & 18.09
 - Ansible 2.7.5
 
-I had a VMware Template called "ubuntu-devops-template" on a VMware NFS datastore that is the baseline for everything. The scripts should work with any other datastore as well but with NFS the beauty is that the clones do not take up any space on the ONTAP storage system. Most likely the scripts will fail with other Linux distros.
+I had a VMware Template called "ubuntu-devops-template" on a VMware NFS datastore that is the baseline for everything. The scripts should work with any other datastore as well but with NFS the beauty is that the clones do not take up any space and are instantly available with an ONTAP storage system. Most likely the scripts will fail on other Linux distros.
 
 The template is based on Ubuntu 18.04 LTS and has a few items configured upfront:
 
