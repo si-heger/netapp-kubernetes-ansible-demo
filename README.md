@@ -17,14 +17,16 @@ From that control VM the scripts will do the following
 The control VM needs Internet access to download and install packages/containers. During the setup the other VMs need Internet access as well. In my case I added a static Internet Gateway to all VMs (check script add-route-internet-gateway.yaml)
 
 Tested and build with:
-- vSphere 6.7
+- vSphere 6.7 (with NetApp NFS Plug-in for VMware VAAI for efficient cloning)
 - ONTAP 9.5
 - Trident 19.01
 - Ubuntu 18.04 LTS
 - Docker 18.06 & 18.09
 - Ansible 2.7.5
 
-I have a VMware Template called "ubuntu-devops-template" on a VMware NFS datastore that is the baseline for everything. The scripts should work with any other datastore as well but with NFS the beauty is that the clones do not take up any space and are instantly available with an ONTAP storage system. Most likely the scripts will fail on other Linux distros.
+I have a VMware Template called "ubuntu-devops-template" on a VMware NFS datastore that is the baseline for everything. The scripts should work with any other datastore as well but with NFS the beauty is that the clones do not take up any space and are instantly available with an ONTAP storage system (if the NetApp NFS Plug-in for VMware VAAI is installed). 
+
+Most likely the scripts will fail on other Linux distros.
 
 The template is based on Ubuntu 18.04 LTS and has a few items configured upfront:
 
