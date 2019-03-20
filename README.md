@@ -58,6 +58,7 @@ On my ansible control VM I installed additionally some items:
   - Preconfigured /etc/ansible/hosts file with following entries:
 ```
 [kubernetes]
+
 [kubernetes:vars]
 ansible_python_interpreter=/usr/bin/python3
 ```
