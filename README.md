@@ -55,6 +55,12 @@ The template is based on Ubuntu 18.04 LTS and has a few items configured upfront
 
 On my ansible control VM I installed additionally some items:
 - Ansible 
+  - Preconfigured /etc/ansible/hosts file with following entries:
+```
+[kubernetes]
+[kubernetes:vars]
+ansible_python_interpreter=/usr/bin/python3
+```
 - VMware Python Ansible lib
   - pip install pyvmomi
 - NetApp Ansible lib
