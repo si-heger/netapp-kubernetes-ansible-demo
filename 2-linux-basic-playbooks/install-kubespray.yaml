@@ -1,8 +1,8 @@
 - hosts: k8s*kubespray*
   remote_user: netapp
+  vars_files:
+    - ../config/git_config.yaml
   vars:
-    git_user: si-heger
-    git_mail: simon.heger@netapp.com
     install_dir: /home/netapp/kubespray/
   tasks:
     - name: "Set a git account"
@@ -73,9 +73,5 @@
 
     - name: "Run kubespray remotely"
       shell: "ansible-playbook -i /home/netapp/kubespray/inventory/k8s-cluster/hosts.ini --become --become-user=root /home/netapp/kubespray/cluster.yml -e 'ansible_python_interpreter=/usr/bin/python3' --ssh-common-args='-o StrictHostKeyChecking=no'"
-
-    - name: "Get cluster access"
-      debug:
-        msg: "You can get access via 'https://first_master:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login' - check https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md for details"
 
 

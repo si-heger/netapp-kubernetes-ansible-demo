@@ -1,17 +1,20 @@
-# Under work
 # Check documentation here:
 # https://docs.ansible.com/ansible/latest/vmware/vmware_scenarios.html
+
+# Assumes that ansible hosts are located in /etc/ansible/hosts and that there is a section in that file with [kubernetes]
 
 - name:  Clone a virtual machine from Linux template and customize
   hosts: localhost
   gather_facts: False
   vars_files:
-    - ../config/vcenter_vars.yml
-    - ../config/k8s-host-list.yml
+    - ../config/vcenter_vars.yaml
+    - ../config/k8s-host-list.yaml
   tasks:
     - set_fact:
-       template_name: "ubuntu-devops-template"
+       template_name: "{{ vm_template }}"
     - name: "Clone from template - {{ template_name }}"
+      async: 1000
+      poll: 5
       with_items: "{{ k8shostlist }}"
       vmware_guest:
         hostname: "{{ vcenter_server }}"
@@ -20,27 +23,15 @@
         validate_certs: False
         name: "{{ item }}"
         template: "{{ template_name }}"
-        datacenter: "Stuttgart"
-        folder: /Stuttgart/vm/Productions-Cluster
+        datacenter: "{{ datacenter }}"
+        folder: "{{ folder }}"
         state: poweredon
-        cluster: "Production-Cluster"
-        resource_pool: "DevOps"
+        cluster: "{{ cluster }}"
+        resource_pool: "{{ resource_pool }}"
         wait_for_ip_address: true
       register: clone_facts
     #- debug:
     #   msg: "Debug clone_facts: {{ clone_facts }}"
-
-
-#    - name: "Add cloned VMs to Ansible in-memory inventory"
-#      with_items: "{{ k8shostlist }}"
-#      add_host:
-#        name: "{{ item }}"
-#        groups: kubernetes
-
-#    - name: "Print cloned name"
-#      debug: 
-#        msg: "item={{item.instance.hw_name}} " 
-#      with_items: "{{clone_facts.results}}"
 
     - name: "Add to ansible hosts file"
       with_items: "{{ clone_facts.results}}"
@@ -49,5 +40,5 @@
         insertafter: '^\[kubernetes]'
         line: '{{item.instance.hw_name}} ansible_host={{item.instance.ipv4}}'
       become: true
-      ignore_errors: yes #if routes already exists ignore that
-
+      ignore_errors: yes 
+      no_log: True

@@ -1,21 +1,16 @@
-
 - hosts: kubernetes
   remote_user: netapp
   gather_facts: false
-
+  vars_files:
+    - ../config/internet_gateway.yaml
   tasks:
     - name: Wait 300 seconds, but only start checking after 60 seconds
       wait_for_connection:
         delay: 60
         timeout: 300
 
-# Use for debug purposes only
-#    - name: "Get hostname"
-#      debug:
-#        msg: "magic variable: {{ inventory_hostname }}"
-
     - name: "Add static internet gatway route to all nodes"
-      command: route add default gw 172.20.218.10 ens160
+      command: route add default gw "{{ internet_gateway }} {{ interface }}"
       become: true
       ignore_errors: yes #if routes already exists ignore that
 

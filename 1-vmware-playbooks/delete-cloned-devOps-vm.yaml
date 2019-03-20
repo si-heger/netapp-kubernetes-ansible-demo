@@ -1,4 +1,3 @@
-# Under work
 # Check documentation here:
 # https://docs.ansible.com/ansible/latest/vmware/vmware_scenarios.html
 
@@ -6,8 +5,8 @@
   hosts: localhost
   gather_facts: False
   vars_files:
-    - ../config/vcenter_vars.yml
-    - ../config/k8s-host-list.yml
+    - ../config/vcenter_vars.yaml
+    - ../config/k8s-host-list.yaml
   tasks:
     - name: "Delete VMs"
       with_items: "{{ k8shostlist }}"
@@ -17,8 +16,8 @@
         password: "{{ vcenter_pass }}"
         validate_certs: False
         name: "{{ item }}"
-        datacenter: "Stuttgart"
-        resource_pool: "DevOps"
+        datacenter: "{{ datacenter }}"
+        resource_pool: "{{ resource_pool }}"
         state: absent
         force: yes
       delegate_to: localhost

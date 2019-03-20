@@ -1,0 +1,6 @@
+- name:  List cluster details
+  hosts: localhost
+  gather_facts: False
+    - name: "Get cluster access"
+      debug:
+        msg: "You can get access via 'https://first_master:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login' - check https://github.com/kubernetes-sigs/kubespray/blob/master/docs/getting-started.md for details"

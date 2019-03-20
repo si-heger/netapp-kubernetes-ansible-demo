@@ -1,0 +1,10 @@
+vcenter_server: vc1.stuttgart.local
+vcenter_user: administrator@vsphere.local
+vcenter_pass: password
+vm_template: ubuntu-devops-template
+datacenter: Stuttgart
+folder: /Stuttgart/vm/Productions-Cluster
+cluster: Production-Cluster
+resource_pool: DevOps 
+
+# used in playbooks in 1-vmware-playbooks

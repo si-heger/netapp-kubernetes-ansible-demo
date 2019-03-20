@@ -1,0 +1,28 @@
+- hosts: localhost
+  tasks:
+    - debug: 
+       msg: "Starting deploying full cluster"
+
+- name: Create VMware VM clones
+  import_playbook: 1-vmware-playbooks/clone-devOps-vm.yaml
+
+- name: Setup VMs
+  import_playbook: 2-linux-basic-playbooks/change-hostnames.yaml
+
+- name: Add routes to an internet gateway to be able to pull images
+  import_playbook: linux-basic-playbooks/add-route-internet-gateway.yaml
+
+- name: Install Kubespray and rollout Kubernetes cluster
+  import_playbook: 2-linux-basic-playbooks/install-kubespray.yaml
+
+- name: Setup kubectl locally and copy kube config
+  import_playbook: 3-kubernetes-playbooks/install-kubectl-locally.yaml
+
+- name: Setup ONTAP SVM
+  import_playbook: 4-ontap-playbooks/setup-ontap-svm.yaml
+
+- name: Add iSCSI IQNs to the ONTAP SVM
+  import_playbook: 4-ontap-playbooks/add-isci-iqn.yaml
+
+- name: Install Trident
+  import_playbook: 5-trident-playbooks/install-trident.yaml

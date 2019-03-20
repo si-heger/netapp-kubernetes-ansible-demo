@@ -107,8 +107,8 @@
       vserver: "{{ vserver }}"
       client_match: "{{ exportpolicy }}"
       ro_rule: any
-      rw_rule: none
-      super_user_security: none
+      rw_rule: any
+      super_user_security: any
       <<: *login
 
   - name: Create iscsi service

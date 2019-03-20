@@ -19,7 +19,7 @@
      ignore_errors: yes
      become: true
 
-   - name: "Install kubectl"
+   - name: "Install local kubectl"
      apt:
        name: kubectl
        update_cache: yes
@@ -42,7 +42,6 @@
 
 - hosts: k8s*master*1
   gather_facts: no
-
   tasks:
    - name: "Copy kube config from remote to local"
      fetch:
@@ -55,6 +54,6 @@
   gather_facts: no
   remote_user: netapp
   tasks:
-   - name: "Create kube config directory"
+   - name: "Create Kubernetes admin user"
      shell: kubectl create -f create-admin-user-k8s.yaml
      ignore_errors: yes

@@ -1,0 +1,21 @@
+hostname: tcl1.stuttgart.local
+username: admin
+password: password
+vserver: svm_kubernetes
+aggr: data_aggr_1
+# used for svm root volume
+homeport: e0d
+homenode1: node1-8040
+homenode2: node2-8040
+# nfs & mgmt will be put on homeport & homenode1
+# iscsi will get a lif on homenode1 and homenode2
+mgmtaddress: 172.20.20.1
+nfsaddress: 172.20.20.1
+iscsi1: 172.20.20.3
+# iscsi1 lif will be put on homenode1
+iscsi2: 172.20.20.4
+# iscsi2 lif will be put on homenode2
+aggrlist: [data_aggr_1, data_aggr_1]
+# list of aggregates where trident can place volumes
+vsadminpassword: password
+exportpolicy: 172.20.0.0/16

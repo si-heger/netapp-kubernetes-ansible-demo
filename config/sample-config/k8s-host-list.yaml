@@ -1,0 +1,9 @@
+# All hosts should start with 'k8s' as some scripts rely on that naming convention
+
+k8shostlist:
+  - k8s-kubespray
+  - k8s-master-1
+  - k8s-master-2
+  - k8s-node-1
+  - k8s-node-2
+  - k8s-node-3

@@ -1,0 +1,66 @@
+# Check install guide at https://netapp-trident.readthedocs.io
+
+- name: Download, configure and install NetApp Trident
+  hosts: localhost
+  gather_facts: False
+  vars_files:
+    - ../config/trident_vars.yaml
+  tasks:
+    - name: Clean temp-files/ path if existing
+      file:
+        state: absent
+        path: ../temp-files/
+
+    - name: Create temp-files/ directory
+      file:
+        path: ../temp-files
+        state: directory
+
+    - name: Download Trident
+      get_url:
+        url: "https://github.com/NetApp/trident/releases/download/v{{ trident_version_full }}/trident-installer-{{ trident_version_full }}.tar.gz"
+        dest: ../temp-files/
+
+    - name: Extract Trident
+      unarchive:
+        src: "../temp-files/trident-installer-{{ trident_version_full }}.tar.gz"
+        dest: "../temp-files/"
+   
+    - name: Move install directory
+      command: "mv -f ../temp-files/trident-installer ../temp-files/trident-installer-{{ trident_version }}"
+
+    - name: Copy backend.json config to setup directory
+      copy:
+        src: "../config/backend.json"
+        dest: "../temp-files/trident-installer-{{ trident_version }}/setup/"
+
+    - name: Install Trident
+      command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl install -n trident"
+
+    - name: Delete original backend
+      command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl delete backend initial_backend -n trident"
+
+    - name: Create NFS v3 backend
+      command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl create -f ../config/nfs-v3-backend.json -n trident"
+
+    - name: Create iSCSI backend
+      command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl create -f ../config/iscsi-backend.json -n trident"
+
+    - name: Create NFS v3 Kubernetes Storage class
+      command: "kubectl create -f ../config/storageclass-nfs.yaml"
+
+    - name: Create iSCSI Kubernetes Storage class
+      command: "kubectl create -f ../config/storageclass-iscsi.yaml"
+
+    - name: Clean potential old tridentctl versions
+      file:
+        state: absent
+        path: "/usr/local/bin/tridentctl"
+      become: true
+
+    - name: Copy tridentctl to /usr/local/bin
+      copy:
+        src: "../temp-files/trident-installer-{{ trident_version }}/tridentctl"
+        dest: /usr/local/bin/
+        mode: 0755
+      become: true
