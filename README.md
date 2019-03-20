@@ -4,7 +4,7 @@ Demo for setting up a Kubernetes cluster with Kubespray and Ansible based on VMw
 This setup is primarly a technology demonstration and can be used as an example. It is not intended to a be a production ready set of scripts. However if you want to reproduce it here are some tips that might help you.
 
 # Architecture
-The demo is based on a ansible control VM from which everything is deployed and controlled. In my scenario this VM is a clone of an Ubuntu based VMware template that I created as first step (see details below).
+The demo is based on an Ansible control VM from which everything is deployed and executed. In my scenario this VM is a clone of an Ubuntu based VMware template that I created as first step (see details below).
 
 From that control VM the scripts will do the following
 1. Create clones of a pre-existing VM template for a kubespray VM and the kubernetes cluster
@@ -12,6 +12,15 @@ From that control VM the scripts will do the following
 3. Setup a Kubernetes cluster with Kubespray on the cloned VMs
 4. Create a new SVM with NFS and iSCSI on an a pre-existing ONTAP cluster
 5. Install trident, backends and storage classes
+
+# How to execute
+
+- Read the preparation section below and do the prep work
+- Copy all files from config/sample-config/ into config/ and modify the paramenters to your local settings (mainly IPs and Passwords)
+- Run the Ansible Playbook with:
+```
+ansible-playbook deploy-full-environment.yaml
+```
 
 # Preparation and Assumptions
 The control VM needs Internet access to download and install packages/containers. During the setup the other VMs need Internet access as well. In my case I added a static Internet Gateway to all VMs (check script add-route-internet-gateway.yaml)
