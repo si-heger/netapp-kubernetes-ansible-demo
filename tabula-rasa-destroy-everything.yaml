@@ -5,4 +5,7 @@
        msg: "Remove everything ...(must be run as root 'sudo ansible-playbook tabula-rasa-destroy-everything.yaml"
 
 - name: Delete all VMs
-  import_playbook: vmware-playbooks/delete-cloned-devOps-vm.yaml
+  import_playbook: 1-vmware-playbooks/delete-cloned-devOps-vm.yaml
+
+- name: Clear SVM
+  import_playbook: 4-ontap-playbooks/delete-ontap-svm.yaml

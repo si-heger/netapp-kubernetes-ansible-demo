@@ -1,0 +1,11 @@
+- hosts: localhost
+  gather_facts: no
+  tasks:
+   - name: "Install metallb v0.7.3 (see https://metallb.universe.tf/installation/)"
+     shell: kubectl apply -f https://raw.githubusercontent.com/google/metallb/v0.7.3/manifests/metallb.yaml
+
+   - name: "Apply metal loadbalancer config"
+     shell: kubectl apply -f ../config/kubernetes/metallb-config.yaml
+     ignore_errors: yes
+
+

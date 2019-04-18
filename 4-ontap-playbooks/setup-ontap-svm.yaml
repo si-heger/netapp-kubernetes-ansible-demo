@@ -1,7 +1,7 @@
 - hosts: localhost
   gather_facts: false
   vars_files:
-    - ..\config\ontap_vars.yaml
+    - ../config/ontap_vars.yaml
   vars:
     login: &login
       hostname: "{{ hostname }}"
@@ -129,7 +129,7 @@
       state: present
       name: kubernetesIgroup
       bind_portset: kubernetesPortSet
-      initiator: 'iqn.2005-03.org.open-iscsi:701520a96856'
+      initiator: 'iqn.1995-08.com.example:string'
       initiator_group_type: iscsi
       ostype: linux
       vserver: "{{ vserver }}"
@@ -143,7 +143,26 @@
       application: ontapi
       lock_user: no
       role_name: vsadmin
+      set_password: "{{password}}"
       vserver: "{{ vserver }}"
       <<: *login
 
+#  - name: Create Additional User svmadmin
+#    na_ontap_user:
+#      state: present
+#      name: svmadmin
+#      authentication_method: password
+#      application: ontapi
+#      lock_user: no
+#      role_name: vsadmin
+#      set_password: "{{password}}"
+#      vserver: "{{ vserver }}"
+#      <<: *login
+
+  - name: Start iscsi service
+    na_ontap_iscsi:
+      state: present
+      service_state: started
+      vserver: "{{ vserver }}"
+      <<: *login
 

@@ -14,7 +14,7 @@
       become: true
 
     - name: "Clone Kubespray from git to {{ inventory_hostname }} into {{ install_dir }}"
-      command: "git clone https://github.com/kubernetes-sigs/kubespray.git {{ install_dir }}"
+      command: "git clone {{kubespray_url}} {{ install_dir }}"
       become: true
       ignore_errors: yes #if folder already exists ignore that
 
@@ -26,27 +26,14 @@
       command: "cp -rfp {{ install_dir }}inventory/sample {{ install_dir }}inventory/k8s-cluster"
       become: true
 
-    - name: "Get IP addresses from /etc/ansible/hosts for the k8s cluster master nodes"
-      shell: grep "k8s.*master.*=" /etc/ansible/hosts | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sed ':a;N;$!ba;s/\n/ /g'
-      register: masterips
-      delegate_to: localhost
-      run_once: true
-
-    - name: "Get IP addresses from /etc/ansible/hosts for the k8s cluster worker nodes"
-      shell: grep "k8s.*node.*=" /etc/ansible/hosts | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | sed ':a;N;$!ba;s/\n/ /g'
-      register: nodeips
-      delegate_to: localhost
-      run_once: true
-
-    - set_fact:
-        clusterips={{ masterips.stdout + ' ' +  nodeips.stdout }}
-
-    - debug: var=clusterips
-      run_once: true
-
-    - name: "Set cluster IPS"
-      shell: "CONFIG_FILE=/home/netapp/kubespray/inventory/k8s-cluster/hosts.ini python3 /home/netapp/kubespray/contrib/inventory_builder/inventory.py {{ clusterips }}"
+    - name: "Copy kubespray hosts.ini to kubespray host"
+      copy:
+        src: ../config/hosts.ini
+        dest: "{{ install_dir }}inventory/k8s-cluster/hosts.ini"
+        owner: netapp
+        group: netapp
       become: true
+      run_once: true
 
     - name: "Copy private key to kubespray host"
       copy:

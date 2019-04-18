@@ -21,7 +21,7 @@
 
    - name: "Install local kubectl"
      apt:
-       name: kubectl
+       name: kubectl=1.13.3-00
        update_cache: yes
      become: true
    

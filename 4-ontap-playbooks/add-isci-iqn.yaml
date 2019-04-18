@@ -1,6 +1,6 @@
 - hosts: kubernetes,!*kubespray*
   vars_files:
-    - ..\config\ontap_vars.yaml
+    - ../config/ontap_vars.yaml
   remote_user: netapp
   gather_facts: false
   vars:
@@ -21,6 +21,19 @@
     debug:
       msg: "iqn: {{ k8s_iqns.stdout }}"
 
+  - name: Clear existing Igroup
+    na_ontap_igroup:
+      state: absent
+      name: kubernetesIgroup
+      bind_portset: kubernetesPortSet
+      initiator: "iqn.1995-08.com.example:string"
+      initiator_group_type: iscsi
+      ostype: linux
+      vserver: "{{ vserver }}"
+      <<: *login
+    delegate_to: localhost
+    run_once: true
+
   - name: Create Igroup
     with_items: "{{ k8s_iqns.stdout }}"
     na_ontap_igroup:
@@ -33,3 +46,4 @@
       vserver: "{{ vserver }}"
       <<: *login
     delegate_to: localhost
+

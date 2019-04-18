@@ -4,22 +4,21 @@
 
   tasks:
     - name: Install packages
-      apt: name={{item}} state=installed
-      with_items:
-        - open-iscsi
-        - lsscsi 
-        - sg3-utils
-        - multipath-tools
-        - scsitools
+      apt: 
+        name: ['open-iscsi', 'lsscsi', 'sg3-utils', 'multipath-tools', 'scsitools']
+        state: present
 
-    - name: Run iscsi stuff
+    - name: Run iSCSI multipath services
       shell: systemctl enable multipath-tools.service
       become: true
+      ignore_errors: true
 
     - name: Run iscsi stuff
       shell: service multipath-tools restart
       become: true
+      ignore_errors: true
 
     - name: Create new iSCSI IQN
       shell: echo "InitiatorName=`/sbin/iscsi-iname`" > /etc/iscsi/initiatorname.iscsi
       become: true
+      ignore_errors: true

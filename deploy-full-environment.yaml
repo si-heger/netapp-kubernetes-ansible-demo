@@ -9,11 +9,14 @@
 - name: Setup VMs
   import_playbook: 2-linux-basic-playbooks/change-hostnames.yaml
 
-- name: Add routes to an internet gateway to be able to pull images
-  import_playbook: linux-basic-playbooks/add-route-internet-gateway.yaml
+- name: Install iSCSI Utils
+  import_playbook: 2-linux-basic-playbooks/install-iscsi-utils.yaml
 
 - name: Install Kubespray and rollout Kubernetes cluster
   import_playbook: 2-linux-basic-playbooks/install-kubespray.yaml
+
+- name: Create static route for internet access
+  import_playbook: 2-linux-basic-playbooks/add-route-internet-gateway.yaml
 
 - name: Setup kubectl locally and copy kube config
   import_playbook: 3-kubernetes-playbooks/install-kubectl-locally.yaml
@@ -26,3 +29,9 @@
 
 - name: Install Trident
   import_playbook: 5-trident-playbooks/install-trident.yaml
+
+- name: Install Load Balancer
+  import_playbook: 6-kubernetes-eco-system/install-loadbalancer.yaml
+
+- name: Print access details
+  import_playbook: 6-kubernetes-eco-system/show-access-details.yaml 

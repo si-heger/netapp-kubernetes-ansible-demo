@@ -1,0 +1,24 @@
+- name:  List cluster details
+  hosts: localhost
+  vars_files:
+    - ../config/k8s-host-list.yaml
+  gather_facts: False
+  tasks:
+    - name: "Get IP of master node 1"
+      shell: cat /etc/ansible/hosts | grep -i master-1 | cut -d'=' -f2
+      register: masterip
+
+    - name: "Get cluster access"
+      debug:
+        msg: "You can get access via https://{{ masterip.stdout }}:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login"
+
+    - name: "Get token for admin-user"
+      shell: "kubectl describe secret -n kube-system $(kubectl get secret -n kube-system --output name | grep admin-user | cut -d / -f2) | grep token: | cut -d ':' -f2 | xargs"
+      register: token
+
+    - name: "Print token"
+      debug:
+        msg: "Access token: {{ token.stdout }}"
+
+
+# alias tridentctl='kubectl exec -t -n trident $(kubectl get pods -n trident -l app=trident.netapp.io -o jsonpath="{.items[].metadata.name}") -c trident-main -- tridentctl -s 127.0.0.1:8000'

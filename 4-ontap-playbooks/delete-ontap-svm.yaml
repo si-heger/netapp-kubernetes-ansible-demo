@@ -2,7 +2,7 @@
 - hosts: localhost
   gather_facts: false
   vars_files:
-    - ..\config\ontap_vars.yaml
+    - ../config/ontap_vars.yaml
   vars:
     login: &login
       hostname: "{{ hostname }}"
@@ -11,79 +11,88 @@
       https: true
       validate_certs: false
   tasks:
-    - name: Get Ontapi version
+    - name: Get Ontap facts
       na_ontap_gather_facts:
         state: info
-        ontapi: 32
         <<: *login
-
+    
     - name: Run ONTAP CLI Command to get igroups
       na_ontap_command:
         command: ['igroup','show','-vserver "{{ vserver }}" -fields igroup']
         <<: *login
       register: igroupoutput
 
-    - name: Delete igroups
+    - name: Delete igroup kubernetesIgroup
       na_ontap_igroup:
         state: absent
         name: "{{ item.split(' ').1 }}"
         vserver: "{{ vserver }}"
         <<: *login
       with_items: "{{ igroupoutput.msg.split('\n') }}"
-      when: item | regex_search('("{{ vserver }}")')
+      when: item | regex_search('(kubernetesIgroup)')
 
-    - name: Delete CIFS Server
-      na_ontap_cifs_server:
-        state: absent
-        vserver: "{{ vserver }}"
-        cifs_server_name: "{{ item }}"
-        #admin_password: "{{ item.admin_password }}"
-        #admin_user_name: "{{ item.admin_user_name }}"
-        ontapi: "{{ ontap_facts.ontap_version }}"
+    - name: Run ONTAP Cli command to delete port set
+      na_ontap_command:
+        command: ["portset delete -vserver {{vserver}} -portset kubernetesPortSet -force"]
         <<: *login
-      with_items: "{{ ontap_facts.cifs_info }}"
-      when:
-        - ontap_facts.cifs_info != ''
-        #- ontap_facts.cifs_info[item].vserver  ==  vserver
+      register: portSetResult
 
-    - name: Delete SnapMirror(s)
-      na_ontap_snapmirror:
-        state: absent
-        destination_path: "{{ ontap_facts.snapmirror_info[item].destination_location }}"
-        #source_vserver: "{{ vserver }}"
-        #source_volume: "{{ item }}"
-        source_hostname: "{{ hostname }}"
-        ontapi: "{{ ontap_facts.ontap_version }}"
+#    - name: Debug output
+#      debug:
+#        msg: "{{portSetResult}}"
+
+    - name: Run ONTAP Cli Command to get SnapMirrors
+      na_ontap_command:
+        command: ['snapmirror', 'list-destinations', '-source-vserver "{{ vserver }}" -fields destination-path, relationship-id']
         <<: *login
-      with_items: "{{ ontap_facts.snapmirror_info }}"
-      when:
-        - ontap_facts.snapmirror_info[item].source_vserver == vserver
+      register: snapmirrors
+
+    - name: Run ONTAP Cli Command to delete SnapMirrors
+      na_ontap_command:
+        command: ['snapmirror', 'release', "-destination-path {{ item.split(' ').1 }}" , "-relationship-id {{ item.split(' ').2 }}"]
+        <<: *login
+      with_items: "{{ snapmirrors.msg.split('\n') }}"
+      when: item is match(vserver)
+
+    - pause:
+        seconds: 2
 
     - name: Delete Interface(s)
       na_ontap_interface:
         state: absent
         interface_name: "{{ item}}"
         vserver: "{{ vserver }}"
-        ontapi: "{{ ontap_facts.ontap_version }}"
         <<: *login
       with_items: "{{ ontap_facts.net_interface_info }}"
       when:  ontap_facts.net_interface_info[item].vserver  ==  vserver
+      ignore_errors: yes
 
     - name: Delete Volume(s)
       na_ontap_volume:
         state: absent
         name: "{{ ontap_facts.volume_info[item].volume_id_attributes.name }}"
         vserver: "{{ vserver }}"
-        ontapi: "{{ ontap_facts.ontap_version }}"
         <<: *login
       with_items: "{{ ontap_facts.volume_info }}"
       when:
         - ontap_facts.volume_info[item].volume_id_attributes.owning_vserver_name  ==  vserver
         - ontap_facts.volume_info[item].volume_id_attributes.name is not search("root")
+      
+    - name: Run ONTAP Cli Command to get SVM Peers
+      na_ontap_command:
+        command: ['vserver', 'peer', 'show', "-vserver {{vserver}}", '-fields peer-vserver']
+        <<: *login
+      register: peers
+
+    - name: Run ONTAP Cli Command to delete SVM Peers
+      na_ontap_command:
+        command: ['vserver', 'peer', 'delete', "-vserver {{vserver}}", "-peer-vserver {{ item.split(' ').1 }}", '-force']
+        <<: *login
+      with_items: "{{ peers.msg.split('\n') }}"
+      when: item is match(vserver)
 
     - name: Delete Vserver
       na_ontap_svm:
         state: absent
         name: "{{ vserver }}"
-        ontapi: "{{ ontap_facts.ontap_version }}"
         <<: *login

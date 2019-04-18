@@ -41,16 +41,18 @@
       command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl delete backend initial_backend -n trident"
 
     - name: Create NFS v3 backend
-      command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl create -f ../config/nfs-v3-backend.json -n trident"
+      shell: "../temp-files/trident-installer-{{ trident_version }}/tridentctl create backend -f ../config/nfs-v3-backend.json -n trident"
 
     - name: Create iSCSI backend
-      command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl create -f ../config/iscsi-backend.json -n trident"
+      shell: "../temp-files/trident-installer-{{ trident_version }}/tridentctl create backend -f ../config/iscsi-backend.json -n trident"
 
     - name: Create NFS v3 Kubernetes Storage class
-      command: "kubectl create -f ../config/storageclass-nfs.yaml"
+      shell: "kubectl create -f ../config/storageclass-nfs.yaml"
+      ignore_errors: true
 
     - name: Create iSCSI Kubernetes Storage class
-      command: "kubectl create -f ../config/storageclass-iscsi.yaml"
+      shell: "kubectl create -f ../config/storageclass-iscsi.yaml"
+      ignore_errors: true
 
     - name: Clean potential old tridentctl versions
       file:

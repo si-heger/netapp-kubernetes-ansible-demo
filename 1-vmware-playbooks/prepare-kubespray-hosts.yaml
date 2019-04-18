@@ -1,0 +1,53 @@
+# Check documentation here:
+# https://docs.ansible.com/ansible/latest/vmware/vmware_scenarios.html
+
+# Assumes that ansible hosts are located in /etc/ansible/hosts and that there is a section in that file with [kubernetes]
+
+- name:  Clone a virtual machine from Linux template and customize
+  hosts: localhost
+  gather_facts: False
+  vars_files:
+    - ../config/vcenter_vars.yaml
+    - ../config/k8s-host-list.yaml
+  tasks:
+
+    - name: "Prepate kubespray hosts file"
+      copy:
+        src: ../config/templates/kubespray_hosts.ini
+        dest: ../config/hosts.ini
+
+    - name: "Add all hosts to kubespray hosts file"
+      with_items: "{{ k8shostlist}}"
+      when: '"kubespray" not in item'
+      lineinfile:
+        dest: ../config/hosts.ini
+        insertafter: '^\[all]'
+        line: '{{item}}     ansible_host=blub ip=bla'
+      ignore_errors: yes
+
+    - name: "Add master hosts to kubespray hosts file"
+      with_items: "{{ k8shostlist}}"
+      when: '"master" in item'
+      lineinfile:
+        dest: ../config/hosts.ini
+        insertafter: '^\[kube-master]'
+        line: '{{item}}'
+      ignore_errors: yes
+
+    - name: "Add worker nodes to kubespray hosts file"
+      with_items: "{{ k8shostlist}}"
+      when: '"node" in item'
+      lineinfile:
+        dest: ../config/hosts.ini
+        insertafter: '^\[kube-node]'
+        line: '{{item}}'
+      ignore_errors: yes
+
+    - name: "Add hosts for etcd to kubespray hosts file"
+      with_items: "{{ k8shostlist}}"
+      when: '"master" in item'
+      lineinfile:
+        dest: ../config/hosts.ini
+        insertafter: '^\[etcd]'
+        line: '{{item}}'
+      ignore_errors: yes
