@@ -1,4 +1,5 @@
-- hosts: k8s*kubespray*
+- name: Setup kubespray pre-reqs and install kubespray
+  hosts: k8s*kubespray*
   remote_user: netapp
   vars_files:
     - ../config/git_config.yaml
@@ -55,8 +56,16 @@
       become: true
       run_once: true
 
+    - name: "Change ownership of kubespray directory"
+      file: dest=/home/netapp/kubespray/ owner=netapp group=netapp recurse=yes
+      become: true
+
     - name: "Test ping"
-      shell: " ansible -i /home/netapp/kubespray/inventory/k8s-cluster/hosts.ini all -m ping -e 'ansible_python_interpreter=/usr/bin/python3' --ssh-common-args='-o StrictHostKeyChecking=no'"
+      shell: "timeout 30s ansible -i /home/netapp/kubespray/inventory/k8s-cluster/hosts.ini all -m ping -e 'ansible_python_interpreter=/usr/bin/python3' --ssh-common-args='-o StrictHostKeyChecking=no'"
+
+    - name: "test"
+      debug: 
+        msg: "test"
 
     - name: "Run kubespray remotely"
       shell: "ansible-playbook -i /home/netapp/kubespray/inventory/k8s-cluster/hosts.ini --become --become-user=root /home/netapp/kubespray/cluster.yml -e 'ansible_python_interpreter=/usr/bin/python3' --ssh-common-args='-o StrictHostKeyChecking=no'"

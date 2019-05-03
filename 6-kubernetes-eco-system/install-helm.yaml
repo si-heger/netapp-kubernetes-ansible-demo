@@ -1,0 +1,16 @@
+- hosts: localhost
+  gather_facts: no
+  tasks:
+   - name: "Download HELM and install client"
+     shell: curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | bash
+     ignore_errors: yes
+     args:
+       warn: false
+
+   - name: "Create tiller service account in Kubernetes"
+     shell: kubectl create -f rbac-config.yaml
+     ignore_errors: yes
+
+   - name: "Install tiller server"
+     shell: helm init --service-account tiller --history-max 200
+     ignore_errors: yes

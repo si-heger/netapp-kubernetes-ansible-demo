@@ -30,8 +30,6 @@
         resource_pool: "{{ resource_pool }}"
         wait_for_ip_address: true
       register: clone_facts
-#    - debug:
-#       msg: "Debug clone_facts: {{ clone_facts }}"
 
     - name: "Add to ansible hosts file"
       with_items: "{{ clone_facts.results}}"

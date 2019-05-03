@@ -18,7 +18,7 @@
 
     - name: "Print token"
       debug:
-        msg: "Access token: {{ token.stdout }}"
+        msg: "Access token: {{ token.stdout }} "
 
 
 # alias tridentctl='kubectl exec -t -n trident $(kubectl get pods -n trident -l app=trident.netapp.io -o jsonpath="{.items[].metadata.name}") -c trident-main -- tridentctl -s 127.0.0.1:8000'

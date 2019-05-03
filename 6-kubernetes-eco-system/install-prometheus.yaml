@@ -1,0 +1,6 @@
+- hosts: localhost
+  gather_facts: no
+  tasks:
+   - name: "Install Prometheus via Helm with storage class gold-iscsi and namespace prometheus"
+     shell: helm install -f prometheus-config.yaml stable/prometheus --namespace prometheus
+     ignore_errors: yes

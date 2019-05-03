@@ -1,4 +1,5 @@
-- hosts: kubernetes
+- name: Add static internet gateway and change hostname
+  hosts: kubernetes
   remote_user: netapp
   gather_facts: false
   vars_files:

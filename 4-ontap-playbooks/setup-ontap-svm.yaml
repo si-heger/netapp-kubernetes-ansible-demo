@@ -146,6 +146,7 @@
       set_password: "{{password}}"
       vserver: "{{ vserver }}"
       <<: *login
+    ignore_errors: true
 
 #  - name: Create Additional User svmadmin
 #    na_ontap_user:

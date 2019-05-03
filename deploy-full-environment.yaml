@@ -3,35 +3,40 @@
     - debug: 
        msg: "Starting deploying full cluster"
 
+# Some commencts to 'include' vs. 'import_playbook':
+# Inlcude is dynamic. That means all playbooks and tasks are processed at execution time
+# Import is static. All statements are pre-processed
+# So if a playbook depends on the output of a prior playbook then this will only work with dynamic include
+
 - name: Create VMware VM clones
-  import_playbook: 1-vmware-playbooks/clone-devOps-vm.yaml
+  include: 1-vmware-playbooks/clone-devOps-vm.yaml
 
 - name: Setup VMs
-  import_playbook: 2-linux-basic-playbooks/change-hostnames.yaml
+  include: 2-linux-basic-playbooks/change-hostnames.yaml
 
 - name: Install iSCSI Utils
-  import_playbook: 2-linux-basic-playbooks/install-iscsi-utils.yaml
+  include: 2-linux-basic-playbooks/install-iscsi-utils.yaml
 
 - name: Install Kubespray and rollout Kubernetes cluster
-  import_playbook: 2-linux-basic-playbooks/install-kubespray.yaml
+  include: 2-linux-basic-playbooks/install-kubespray.yaml
 
 - name: Create static route for internet access
-  import_playbook: 2-linux-basic-playbooks/add-route-internet-gateway.yaml
+  include: 2-linux-basic-playbooks/add-route-internet-gateway.yaml
 
 - name: Setup kubectl locally and copy kube config
-  import_playbook: 3-kubernetes-playbooks/install-kubectl-locally.yaml
+  include: 3-kubernetes-playbooks/install-kubectl-locally.yaml
 
 - name: Setup ONTAP SVM
-  import_playbook: 4-ontap-playbooks/setup-ontap-svm.yaml
+  include: 4-ontap-playbooks/setup-ontap-svm.yaml
 
 - name: Add iSCSI IQNs to the ONTAP SVM
-  import_playbook: 4-ontap-playbooks/add-isci-iqn.yaml
+  include: 4-ontap-playbooks/add-isci-iqn.yaml
 
 - name: Install Trident
-  import_playbook: 5-trident-playbooks/install-trident.yaml
+  include: 5-trident-playbooks/install-trident.yaml
 
 - name: Install Load Balancer
-  import_playbook: 6-kubernetes-eco-system/install-loadbalancer.yaml
+  include: 6-kubernetes-eco-system/install-loadbalancer.yaml
 
 - name: Print access details
-  import_playbook: 6-kubernetes-eco-system/show-access-details.yaml 
+  include: 6-kubernetes-eco-system/show-access-details.yaml 

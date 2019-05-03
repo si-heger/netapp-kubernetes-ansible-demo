@@ -1,4 +1,5 @@
-- hosts: kubernetes
+- name: Install iSCSI Utils
+  hosts: kubernetes
   remote_user: netapp
   gather_facts: false
 
