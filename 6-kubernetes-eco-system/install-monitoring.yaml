@@ -1,0 +1,18 @@
+- hosts: localhost
+  gather_facts: no
+  tasks:
+   - name: "Install Prometheus via Helm with storage class gold-iscsi and namespace prometheus"
+     shell: helm install -f prometheus-config.yaml stable/prometheus --namespace monitoring
+     ignore_errors: yes
+
+   - name: "Install Prometheus Service"
+     shell: kubectl create -f prometheus-service.yaml
+     ignore_errors: yes
+
+   - name: "Install Grafana via Helm into namespace prometheus"
+     shell: helm install stable/grafana --namespace monitoring
+     ignore_errors: yes
+
+   - name: "Install Grafana Service"
+     shell: kubectl create -f grafana-service.yaml
+     ignore_errors: yes

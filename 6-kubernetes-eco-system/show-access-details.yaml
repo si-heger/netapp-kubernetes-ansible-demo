@@ -8,9 +8,25 @@
       shell: cat /etc/ansible/hosts | grep -i master-1 | cut -d'=' -f2
       register: masterip
 
+    - name: "Get URL for Prometheus/Grafana"
+      shell: kubectl get service -n monitoring | grep LoadBalancer | cut -d':' -f1
+      register: monitoring
+    
+    - name: "Get password for admin user for grafana"
+      shell: echo $(kubectl get secret -n monitoring $(kubectl get secret -n monitoring | grep grafana | grep Opaque | cut -d\' \' -f1) -o jsonpath="{.data.admin-password}" | base64 --decode)
+      register: grafanapw
+
     - name: "Get cluster access"
       debug:
         msg: "You can get access via https://{{ masterip.stdout }}:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login"
+
+    - name: "Print URL for Prometheus/Grafana:"
+      debug:
+        msg: "{{ monitoring.stdout }}"
+    
+    - name: "Print Grafana password for user admin"
+      debug:
+        msg: "{{ grafanapw.stdout }}"
 
     - name: "Get token for admin-user"
       shell: "kubectl describe secret -n kube-system $(kubectl get secret -n kube-system --output name | grep admin-user | cut -d / -f2) | grep token: | cut -d ':' -f2 | xargs"
