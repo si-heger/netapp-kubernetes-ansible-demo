@@ -1,2 +1,3 @@
 git_user: username
-git_mail: user@mymail.com
+git_mail: username@url.com
+kubespray_url: https://github.com/kubernetes-sigs/kubespray.git

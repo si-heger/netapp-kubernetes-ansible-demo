@@ -1,0 +1,16 @@
+{
+    "version": 1,
+    "storageDriverName": "ontap-san",
+    "backendname": "backend_svm_kubernetes_iscsi",
+    "managementLIF": "172.20.209.176",
+    "dataLIF": "172.20.209.178",
+    "svm": "svm_kubernetes",
+    "username": "vsadmin",
+    "password": "mypassword",
+    "storagePrefix": "kube-iscsi",
+    "limitVolumeSize": "100Gi",
+    "igroupName": "kubernetesIgroup",
+    "defaults": {
+      "snapshotPolicy": "default"
+    }
+}

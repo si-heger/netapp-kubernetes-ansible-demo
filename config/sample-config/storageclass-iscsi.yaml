@@ -1,0 +1,10 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gold-iscsi
+provisioner: netapp.io/trident
+parameters:
+  backendType: "ontap-san"
+  provisioningType: "thin"
+  snapshots: "true"
+

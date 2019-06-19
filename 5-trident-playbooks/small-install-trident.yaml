@@ -34,32 +34,8 @@
         src: "../config/backend.json"
         dest: "../temp-files/trident-installer-{{ trident_version }}/setup/"
 
-    - name: Install Trident with ONTAP NFS v4.1 backend
+    - name: Install Trident
       command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl install -n trident"
-
-    - name: Delete original ONTAP NFS v4.1  backend
-      command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl delete backend initial_backend -n trident"
-
-    - name: Create ONTAP NFS v3 backend
-      shell: "../temp-files/trident-installer-{{ trident_version }}/tridentctl create backend -f ../config/nfs-v3-backend.json -n trident"
-
-    - name: Create ONTAP iSCSI backend
-      shell: "../temp-files/trident-installer-{{ trident_version }}/tridentctl create backend -f ../config/iscsi-backend.json -n trident"
-
-    - name: Create HCI/Solidfire iSCSI backend
-      shell: "../temp-files/trident-installer-{{ trident_version }}/tridentctl create backend -f ../config/iscsi-backend-solidfire.json -n trident"
-
-    - name: Create ONTAP NFS v3 Kubernetes Storage class
-      shell: "kubectl create -f ../config/storageclass-nfs.yaml"
-      ignore_errors: true
-
-    - name: Create ONTAP iSCSI Kubernetes Storage class
-      shell: "kubectl create -f ../config/storageclass-iscsi.yaml"
-      ignore_errors: true
-
-    - name: Create HCI/Solidfire iSCSI Kubernetes Storage class
-      shell: "kubectl create -f ../config/storageclass-iscsi-solidfire.yaml"
-      ignore_errors: true
 
     - name: Clean potential old tridentctl versions
       file:

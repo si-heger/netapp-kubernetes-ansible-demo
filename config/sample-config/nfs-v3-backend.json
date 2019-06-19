@@ -1,15 +1,15 @@
 {
     "version": 1,
     "storageDriverName": "ontap-nas",
-    "managementLIF": "172.20.0.1",
-    "dataLIF": "172.20.0.2",
-    "backendname": "initial_backend",
+    "backendname": "backend_svm_kubernetes_nfs",
+    "managementLIF": "172.20.209.176",
+    "dataLIF": "172.20.209.177",
     "svm": "svm_kubernetes",
     "username": "vsadmin",
     "password": "mypassword",
-    "storagePrefix": "kube",
+    "storagePrefix": "kube-nfs",
     "limitVolumeSize": "100Gi",
-    "nfsMountOptions": "nfsvers=4",
+    "nfsMountOptions": "nfsvers=3",
     "defaults": {
       "snapshotPolicy": "default"
     }

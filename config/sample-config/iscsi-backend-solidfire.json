@@ -1,0 +1,9 @@
+{
+    "version": 1,
+    "storageDriverName": "solidfire-san",
+    "Endpoint": "https://admin:<password>@172.20.2.158/json-rpc/8.0",
+    "SVIP": "172.23.2.158:3260",
+    "TenantName": "trident",
+    "UseCHAP": true,
+    "Types": [{"Type": "Gold", "Qos": {"minIOPS": 6000, "maxIOPS": 8000, "burstIOPS": 10000}}]
+}
