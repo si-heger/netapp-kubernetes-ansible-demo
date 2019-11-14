@@ -1,0 +1,37 @@
+# Check documentation here:
+# https://docs.ansible.com/ansible/latest/vmware/vmware_scenarios.html
+
+# Assumes that ansible hosts are located in /etc/ansible/hosts and that there is a section in that file with [kubernetes]
+
+- name:  Clone a virtual machine from Linux template and customize
+  hosts: localhost
+  gather_facts: False
+  vars_files:
+    - ../config/vcenter_vars.yaml
+    - ../config/k8s-host-list.yaml
+  tasks:
+    - set_fact:
+       template_name: "{{ vm_template }}"
+    - name: "Clone from template - {{ template_name }}"
+      async: 1000
+      poll: 5
+      with_items: "{{ k8shostlist }}"
+      vmware_guest:
+        hostname: "{{ vcenter_server }}"
+        username: "{{ vcenter_user }}"
+        password: "{{ vcenter_pass }}"
+        validate_certs: False
+        name: "{{ item }}"
+        template: "{{ template_name }}"
+        datacenter: "{{ datacenter }}"
+        folder: "{{ folder }}"
+        state: poweredon
+        cluster: "{{ cluster }}"
+        resource_pool: "{{ resource_pool }}"
+        wait_for_ip_address: true
+      register: clone_facts
+
+    - name: "Print details"
+      with_items: "{{ clone_facts.results}}"
+      debug:
+        msg: "{{ item.instance.hw_name }} {{item.instance.ipv4}} {{item.instance.hw_eth0.ipaddresses[0]}}"

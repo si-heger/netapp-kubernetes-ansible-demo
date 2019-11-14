@@ -36,7 +36,7 @@
       lineinfile:
         dest: /etc/ansible/hosts
         insertafter: '^\[kubernetes]'
-        line: '{{item.instance.hw_name}} ansible_host={{item.instance.ipv4}}'
+        line: '{{item.instance.hw_name}} ansible_host={{item.instance.hw_eth0.ipaddresses[0]}}'
       become: true
       ignore_errors: yes 
       no_log: True
@@ -57,7 +57,7 @@
       lineinfile:
         dest: ../config/hosts.ini
         insertafter: '^\[all]'
-        line: '{{item.instance.hw_name}}     ansible_host={{item.instance.ipv4}} ip={{item.instance.ipv4}}'
+        line: '{{item.instance.hw_name}}     ansible_host={{item.instance.hw_eth0.ipaddresses[0]}} ip={{item.instance.hw_eth0.ipaddresses[0]}}'
       ignore_errors: yes
 
     - name: "Add master hosts to kubespray hosts file"
@@ -84,6 +84,6 @@
       lineinfile:
         dest: ../config/hosts.ini
         insertafter: '^\[etcd]'
-        line: '{{item.instance.hw_name}} ansible_host={{item.instance.ipv4}}'
+        line: '{{item.instance.hw_name}} ansible_host={{item.instance.hw_eth0.ipaddresses[0]}}'
       ignore_errors: yes
 

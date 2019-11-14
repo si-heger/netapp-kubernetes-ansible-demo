@@ -16,12 +16,12 @@
         path: ../temp-files
         state: directory
 
-    - name: Download Trident
+    - name: "Download Trident Version {{ trident_version_full }}"
       get_url:
         url: "https://github.com/NetApp/trident/releases/download/v{{ trident_version_full }}/trident-installer-{{ trident_version_full }}.tar.gz"
         dest: ../temp-files/
 
-    - name: Extract Trident
+    - name: Extract Trident to ../temp-files/
       unarchive:
         src: "../temp-files/trident-installer-{{ trident_version_full }}.tar.gz"
         dest: "../temp-files/"
@@ -29,16 +29,12 @@
     - name: Move install directory
       command: "mv -f ../temp-files/trident-installer ../temp-files/trident-installer-{{ trident_version }}"
 
-    - name: Copy backend.json config to setup directory
-      copy:
-        src: "../config/backend.json"
-        dest: "../temp-files/trident-installer-{{ trident_version }}/setup/"
+    - name: Uninstall pre-existing Trident installation (if existing)
+      command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl uninstall -n trident"
+      ignore_errors: true
 
-    - name: Install Trident with ONTAP NFS v4.1 backend
+    - name: Install Trident
       command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl install -n trident"
-
-    - name: Delete original ONTAP NFS v4.1  backend
-      command: "../temp-files/trident-installer-{{ trident_version }}/tridentctl delete backend initial_backend -n trident"
 
     - name: Create ONTAP NFS v3 backend
       shell: "../temp-files/trident-installer-{{ trident_version }}/tridentctl create backend -f ../config/nfs-v3-backend.json -n trident"

@@ -19,6 +19,20 @@
       become: true
       ignore_errors: yes #if folder already exists ignore that
 
+    - name: "Checkout specific Kubespray version {{ kubespray_branch_tag }}"
+      command: "git --git-dir={{ install_dir }}.git checkout -b {{ kubespray_branch_tag }}"
+      become: true
+      ignore_errors: yes
+
+    - name: "Checkout specific Kubernetes version {{ kubernetes_version }}"
+      lineinfile: 
+         path: /home/netapp/kubespray/inventory/k8s-cluster/group_vars/k8s-cluster/k8s-cluster.yml
+         regexp: "kube_version:.*"
+         line: "kube_version: {{ kubernetes_version }}"
+         create: yes
+      become: true
+      ignore_errors: yes #if already checked out for example
+
     - name: "Install kubespray requirements"
       command: "pip3 install -r {{ install_dir }}requirements.txt"
       become: true

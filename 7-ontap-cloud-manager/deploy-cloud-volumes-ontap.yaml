@@ -1,0 +1,128 @@
+---
+- hosts: localhost
+  name: Test job
+  gather_facts: no
+  vars:
+    occm_host: 172.16.2.251
+    email: simon.heger@gmx.net
+    password: ZVRyCWw2!
+    region: us-east-1
+    aws_account_id: 174140700298
+
+  tasks:
+
+  - name: Get General Cloud Manager Data
+    uri:
+      url: "http://{{ occm_host }}/occm/api/occm/system/support-services"
+      validate_certs: false
+      body_format: json
+      method: GET
+      headers:
+        Accept: application/json
+    register: general_data
+  
+#  - name: Print General Cloud Manager Data
+#    debug:
+#      msg: "{{ general_data }}"
+
+  - name: Print Cloud Manager clientId, domain, audience
+    debug:
+      msg: "{{ general_data.json.portalService.auth0Information }}"
+
+  - name: Authenticate with OCCM via email/password
+    uri:
+      url: "http://{{ occm_host }}/occm/api/auth/login"
+      validate_certs: false
+      method: POST
+      status_code: 204
+      headers:
+        Accept: application/json
+      body_format: json
+      body: '{ "email": "{{ email }}", "password": "{{ password }}" }'
+    register: token_id
+
+  - name: Get Tenant ID
+    uri:
+      url: "http://{{ occm_host }}/occm/api/tenants"
+      validate_certs: false
+      method: GET
+      headers:
+        Content-Type: application/json
+        Cookie: "{{ token_id.set_cookie }}"
+    register: tenant_id
+
+  - name: Print Tenant ID
+    debug:
+      msg: " {{ tenant_id.json[0] }} "
+
+  - name: Get full manifest
+    uri:
+      url: "http://{{ occm_host }}/occm/api/vsa/metadata/manifests"
+      validate_certs: false
+      body_format: json
+      method: GET
+      headers:
+        Content-Type: application/json
+        Cookie: "{{ token_id.set_cookie }}"
+    register: manifest
+
+#  - name: Print full manifest
+#    debug:
+#      msg: " {{ manifest }}"
+
+  - name: Get VSA Metadata
+    uri:
+      url: "http://{{ occm_host }}/occm/api/vsa/metadata/vpcs?region={{ region }}&cloudProviderAccountId={{ aws_account_id }}"
+      validate_certs: false
+      body_format: json
+      method: GET
+      headers:
+        Content-Type: application/json
+        Cookie: "{{ token_id.set_cookie }}"
+    register: metadata
+
+  - name: Print VSA Metadata
+    debug:
+      msg: " {{ metadata.json }}"
+
+  - name: Get AWS WORM supported features
+    uri:
+      url: "http://{{ occm_host }}/occm/api/aws/ha/metadata/supported-features?region={{ region }}&ontapVersion=ONTAP-9.6RC1.T1&dataEncryptionType=NONE&licenseType=cot-standard-paygo&instanceType=m4.2xlarge"
+      validate_certs: false
+      body_format: json
+      method: GET
+      headers:
+        Content-Type: application/json
+        Cookie: "{{ token_id.set_cookie }}"
+    register: aws_features
+
+  - name: Print AWS WORM supported features
+    debug:
+      msg: " {{ aws_features.json }}"
+
+  - name: Get AWS Workspace details
+    uri:
+      url: "http://{{ occm_host }}/occm/api/vsa/working-environments"
+      validate_certs: false
+      body_format: json
+      method: GET
+      headers:
+        Content-Type: application/json
+        Cookie: "{{ token_id.set_cookie }}"
+    register: workenv
+
+  - name: Print working env
+    debug:
+      msg: "{{ workenv.json }}"
+
+  - name: Create Cloud Volume ONTAP 1
+    uri:
+      url: "http://{{ occm_host }}/occm/api/vsa/working-environments"
+      validate_certs: false
+      body_format: json
+      method: POST
+      status_code: 202
+      headers:
+        Content-Type: application/json
+        Cookie: "{{ token_id.set_cookie }}"
+      body: '{"name": "awsCluster1","tenantId": "{{ tenant_id.json[0].publicId }}","region": "us-east-1","packageName": "aws_custom","dataEncryptionType": "NONE", "vsaMetadata": { "ontapVersion": "ONTAP-9.6RC1.T1", "licenseType": "cot-standard-paygo", "instanceType": "m4.2xlarge" },"writingSpeedState": "NORMAL","subnetId": "subnet-0ef0b437b8638bc82","svmPassword": "netapp01!","vpcId": "vpc-0c20454fd2c589945","ontapEncryptionParameters": null, "ebsVolumeType": "gp2", "ebsVolumeSize": { "size": 100, "unit": "GB"}}' 

@@ -8,4 +8,9 @@
      shell: kubectl apply -f ../config/kubernetes/metallb-config.yaml
      ignore_errors: yes
 
+   - name: "Install nginx ingress"
+     shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
+
+   - name: "Create Service for ingress of type loadBalancer"
+     shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/cloud-generic.yaml
 

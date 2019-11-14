@@ -1,0 +1,14 @@
+- hosts: localhost
+  gather_facts: no
+  tasks:
+   - name: "Download ISTIO and install client"
+     shell: "cd /tmp; curl -L https://git.io/getLatestIstio | sh"     
+     ignore_errors: yes
+
+   - name: "Create tiller service account in Kubernetes"
+     shell: kubectl create -f rbac-config.yaml
+     ignore_errors: yes
+
+   - name: "Install tiller server"
+     shell: helm init --service-account tiller --history-max 200
+     ignore_errors: yes

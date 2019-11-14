@@ -1,0 +1,83 @@
+---
+- hosts: localhost
+  name: Test job
+  vars:
+    occm_host: 172.16.2.251
+    email: admin@netapp.com
+    password: 123456
+
+  tasks:
+
+  - name: Get clientID
+    uri:
+      url: "http://{{ occm_host }}/occm/api/occm/system/support-services"
+      validate_certs: false
+      body_format: json
+      method: GET
+      headers:
+        Accept: application/json
+    register: client_id
+  
+  - name: Debug output
+    debug:
+      msg: "{{ client_id }}"
+
+  - name: Authenticate with OCCM
+    uri:
+      url: "http://{{ occm_host }}/occm/api/auth/login"
+      validate_certs: false
+      method: POST
+      status_code: 204
+      headers:
+        Accept: application/json
+      body_format: json
+      body: '{ "email": "{{ email }}", "password": "{{ password }}" }'
+    register: token_id
+
+  - name: Get Tenant ID
+    uri:
+      url: "http://{{ occm_host }}/occm/api/tenants"
+      validate_certs: false
+      method: GET
+      headers:
+        Content-Type: application/json
+        Cookie: "{{ token_id.set_cookie }}"
+    register: tenant_id
+
+  - name: Create Cloud Volume ONTAP 1
+    uri:
+      url: "http://{{ occm_host }}/occm/api/vsa/working-environments"
+      validate_certs: false
+      body_format: json
+      method: POST
+      status_code: 202
+      headers:
+        Content-Type: application/json
+        Cookie: "{{ token_id.set_cookie }}"
+      body: '{"name": "cluster01","volume": {"exportPolicyInfo": { "policyType": "custom", "ips": [ "10.20.0.0/16" ] }, "snapshotPolicyName": "default", "name": "vol01", "enableThinProvisioning": true, "enableDeduplication": true, "enableCompression": true, "size": { "size": 10, "unit": "GB" }, "tieringPolicy": "auto" }, "tenantId": "{{ tenant_id.json[0].PublicId }}", "region": "us-east-1", "packageName": "aws_custom", "dataEncryptionType": "AWS", "capacityTier": "S3", "vsaMetadata": { "ontapVersion": "ONTAP.ENG-9.4.T1", "licenseType": "cot-standard-paygo", "instanceType": "m4.2xlarge" }, "writingSpeedState": "HIGH", "subnetId": "subnet-1", "svmPassword": "netapp01!", "vpcId": "vpc-1", "ontapEncryptionParameters": null, "ebsVolumeType": "gp2", "ebsVolumeSize": { "size": 1, "unit": "TB", "_identifier": "1 TB" }, "awsTags": [], "optimizedNetworkUtilization": false, "instanceTenancy": "default", "iops": null, "instanceProfileName": null, "roleArn": null }'
+    register: instance1
+
+  - name: Create Cloud Volume ONTAP 2
+    uri:
+      url: "http://{{ occm_host }}/occm/api/vsa/working-environments"
+      validate_certs: false
+      body_format: json
+      method: POST
+      status_code: 202
+      headers:
+        Content-Type: application/json
+        Cookie: "{{ token_id.set_cookie }}"
+      body: '{"name": "cluster02","volume": {"exportPolicyInfo": { "policyType": "custom", "ips": [ "10.20.0.0/16" ] }, "snapshotPolicyName": "default", "name": "vol02", "enableThinProvisioning": true, "enableDeduplication": true, "enableCompression": true, "size": { "size": 10, "unit": "GB" }, "tieringPolicy": "auto" }, "tenantId": "{{ tenant_id.json[0].PublicId }}", "region": "us-east-1", "packageName": "aws_custom", "dataEncryptionType": "AWS", "capacityTier": "S3", "vsaMetadata": { "ontapVersion": "ONTAP.ENG-9.4.T1", "licenseType": "cot-standard-paygo", "instanceType": "m4.2xlarge" }, "writingSpeedState": "HIGH", "subnetId": "subnet-1", "svmPassword": "netapp01!", "vpcId": "vpc-1", "ontapEncryptionParameters": null, "ebsVolumeType": "gp2", "ebsVolumeSize": { "size": 1, "unit": "TB", "_identifier": "1 TB" }, "awsTags": [], "optimizedNetworkUtilization": false, "instanceTenancy": "default", "iops": null, "instanceProfileName": null, "roleArn": null }'
+    register: instance2
+
+#  - name: Replicate from 1 to 2
+#    uri:
+#      url: "http://{{ occm_host }}/occm/api/replication/vsa"
+#      validate_certs: false
+#      body_format: json
+#      method: POST
+#      headers:
+#        Content-Type: application/json
+#        Cookie: "{{ token_id.set_cookie }}"
+#      body: '{"replicationRequest": {"sourceWorkingEnvironmentId": "{{ instance1.publicId }}", "destinationWorkingEnvironmentId": "{{ instance2.publicId }}", "sourceInterclusterLifIps": ["string"], "destinationInterclusterLifIps": ["string"], "policyName": "string", "scheduleName", "string", "maxTransferRate": "integer"}, "replicationVolume": {"sourceSvmName": "string", "sourceVolumeName": "string", "destinationVolumeName": "string", "destinationAggregateName": "string", "numOfDisksApprovedToAdd": "integer", "advancedMode": "boolean", "destinationProviderVolumeType": "string", "destinationCapacityTier": "string"}}'
+
